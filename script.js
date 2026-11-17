@@ -16,6 +16,8 @@ document.querySelector('.version').classList.add('show');
 
 (function () {
   let ctx = null, master = null, timer = null, started = false, playing = false;
+  // 记录“首次交互自动播放”的时间，避免同一次点击又把它关掉
+  let gestureStartedAt = 0;
 
   // ---- 音符频率表 ----
   const F = n => 440 * Math.pow(2, (n - 69) / 12);
@@ -134,6 +136,8 @@ document.querySelector('.version').classList.add('show');
   }
 
   btn.addEventListener('click', () => {
+    // 首次交互触发的自动播放紧接着也会派发 click，忽略这一次以免刚开启就被关闭
+    if (Date.now() - gestureStartedAt < 400) return;
     playing ? (stop(), showTip('音乐已关闭')) : (start(), showTip('音乐已开启'));
   });
 
@@ -149,6 +153,7 @@ document.querySelector('.version').classList.add('show');
       const kick = () => {
         document.removeEventListener('pointerdown', kick);
         document.removeEventListener('keydown', kick);
+        gestureStartedAt = Date.now();
         start();
         autoStart();
       };
@@ -160,6 +165,7 @@ document.querySelector('.version').classList.add('show');
   } catch (e) {
     const kick = () => {
       document.removeEventListener('pointerdown', kick);
+      gestureStartedAt = Date.now();
       start();
       autoStart();
     };
